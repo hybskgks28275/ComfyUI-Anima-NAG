@@ -4,6 +4,8 @@ Experimental Normalized Attention Guidance node for Anima Preview 3 in ComfyUI.
 
 Common SD/SDXL NAG nodes patch `BasicTransformerBlock.attn2`, but Anima Preview 3 is detected by ComfyUI as `image_model="anima"` and uses the Anima/Cosmos Predict2 attention path. This custom node wraps ComfyUI's `optimized_attention` path instead, so it can affect Anima cross-attention.
 
+This node is intended to be used together with [Anima Turbo LoRA](https://civitai.red/models/2560840/anima-turbo-lora). The LoRA page describes it as trained on Anima Preview 3 and suggests CFG 1 with 8-12 steps; this node is meant to add negative-guidance control to that kind of low-CFG turbo workflow.
+
 ## Node
 
 ### Anima Normalized Attention Guidance
@@ -22,12 +24,16 @@ Common SD/SDXL NAG nodes patch `BasicTransformerBlock.attn2`, but Anima Preview 
 ## Usage
 
 1. Load an Anima Preview 3 diffusion model.
-2. Connect the model to `Anima Normalized Attention Guidance`.
-3. Connect the patched model output to your sampler.
-4. Connect both positive and negative conditioning to the sampler.
+2. Apply Anima Turbo LoRA to the model and clip.
+3. Connect the LoRA-applied model to `Anima Normalized Attention Guidance`.
+4. Connect the patched model output to your sampler.
+5. Connect both positive and negative conditioning to the sampler.
 
 Suggested starting values:
 
+- Anima Turbo LoRA strength: around `1.0`, or slightly below `1.0` for more variety
+- sampler CFG: `1.0`
+- sampler steps: `8-12`
 - `scale`: `2.0`
 - `tau`: `2.5`
 - `alpha`: `0.5`
