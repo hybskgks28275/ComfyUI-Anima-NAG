@@ -1,5 +1,7 @@
 # ComfyUI-Anima-NAG
 
+[日本語版 README](README_ja.md)
+
 Experimental Normalized Attention Guidance node for the official Anima base model in ComfyUI.
 
 Common SD/SDXL NAG nodes patch `BasicTransformerBlock.attn2`, but Anima is detected by ComfyUI as `image_model="anima"` and uses the Anima/Cosmos Predict2 attention path. This custom node wraps ComfyUI's `optimized_attention` path instead, so it can affect Anima cross-attention.
