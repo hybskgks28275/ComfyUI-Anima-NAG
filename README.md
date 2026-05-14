@@ -16,7 +16,7 @@ This node is intended to be used together with [Anima Turbo LoRA](https://civita
   - `scale` (FLOAT): NAG strength
   - `tau` (FLOAT): normalization threshold
   - `alpha` (FLOAT): blend between original positive attention and normalized guided attention
-  - `sigma_start` / `sigma_end` (FLOAT): active sigma range; `-1` means no limit
+  - `start_percent` / `end_percent` (FLOAT): active sampling range; `0.0` is the first step and `1.0` is the last step
   - `only_anima` (BOOLEAN): apply only when the model is detected as `image_model="anima"`
 - Output:
   - `model` (MODEL): patched model
@@ -37,13 +37,14 @@ Suggested starting values:
 - `scale`: `2.0`
 - `tau`: `2.5`
 - `alpha`: `0.5`
-- `sigma_start`: `-1`
-- `sigma_end`: `-1`
+- `start_percent`: `0.0`
+- `end_percent`: `1.0`
 - `only_anima`: `true`
 
 ## Notes
 
 - This is experimental and tuned for Anima Preview 3's current ComfyUI implementation.
+- `start_percent` / `end_percent` are converted internally to the model's sigma range with ComfyUI's `percent_to_sigma()`.
 - The node needs a CFG batch containing both positive and negative branches. If no negative conditioning is connected, it will have no effect.
 - Masked attention calls are skipped to avoid shape-specific mask slicing issues.
 - If another node already set `optimized_attention_override`, this node wraps the previous override rather than replacing it outright.

@@ -34,6 +34,18 @@ def _is_anima_model(model) -> bool:
         return False
 
 
+def _percent_to_sigma_range(model, start_percent: float, end_percent: float) -> tuple[float, float]:
+    start_percent = max(0.0, min(1.0, float(start_percent)))
+    end_percent = max(0.0, min(1.0, float(end_percent)))
+    if end_percent < start_percent:
+        start_percent, end_percent = end_percent, start_percent
+
+    model_sampling = model.get_model_object("model_sampling")
+    sigma_start = float(model_sampling.percent_to_sigma(start_percent))
+    sigma_end = float(model_sampling.percent_to_sigma(end_percent))
+    return sigma_start, sigma_end
+
+
 class AnimaNormalizedAttentionGuidance(io.ComfyNode):
     """Apply NAG through optimized_attention for Anima Preview 3."""
 
@@ -72,20 +84,20 @@ class AnimaNormalizedAttentionGuidance(io.ComfyNode):
                     tooltip="Blend between original positive attention and normalized guided attention.",
                 ),
                 io.Float.Input(
-                    "sigma_start",
-                    default=-1.0,
-                    min=-1.0,
-                    max=10000.0,
+                    "start_percent",
+                    default=0.0,
+                    min=0.0,
+                    max=1.0,
                     step=0.01,
-                    tooltip="Apply while sigma <= this value. -1 means no upper limit.",
+                    tooltip="Relative sampling progress to start applying NAG. 0.0 is the first step.",
                 ),
                 io.Float.Input(
-                    "sigma_end",
-                    default=-1.0,
-                    min=-1.0,
-                    max=10000.0,
+                    "end_percent",
+                    default=1.0,
+                    min=0.0,
+                    max=1.0,
                     step=0.01,
-                    tooltip="Apply while sigma > this value. -1 means no lower limit.",
+                    tooltip="Relative sampling progress to stop applying NAG. 1.0 is the last step.",
                 ),
                 io.Boolean.Input(
                     "only_anima",
@@ -109,16 +121,15 @@ class AnimaNormalizedAttentionGuidance(io.ComfyNode):
         scale: float,
         tau: float,
         alpha: float,
-        sigma_start: float,
-        sigma_end: float,
+        start_percent: float,
+        end_percent: float,
         only_anima: bool,
     ) -> io.NodeOutput:
         m = model.clone()
         if only_anima and not _is_anima_model(m):
             return io.NodeOutput(m)
 
-        sigma_start = float("inf") if sigma_start < 0 else float(sigma_start)
-        sigma_end = -float("inf") if sigma_end < 0 else float(sigma_end)
+        sigma_start, sigma_end = _percent_to_sigma_range(m, start_percent, end_percent)
         scale = float(scale)
         tau = float(tau)
         alpha = float(alpha)

@@ -16,7 +16,7 @@ ComfyUI の Anima Preview 3 向け Normalized Attention Guidance 実験ノード
   - `scale` (FLOAT): NAG の強度
   - `tau` (FLOAT): 正規化しきい値
   - `alpha` (FLOAT): 元の positive attention と NAG 結果のブレンド率
-  - `sigma_start` / `sigma_end` (FLOAT): 有効 sigma 範囲。`-1` で制限なし
+  - `start_percent` / `end_percent` (FLOAT): 有効なサンプリング範囲。`0.0` が最初のステップ、`1.0` が最後のステップ
   - `only_anima` (BOOLEAN): `image_model="anima"` として検出されたモデルだけに適用
 - 出力:
   - `model` (MODEL): パッチ済みモデル
@@ -37,13 +37,14 @@ ComfyUI の Anima Preview 3 向け Normalized Attention Guidance 実験ノード
 - `scale`: `2.0`
 - `tau`: `2.5`
 - `alpha`: `0.5`
-- `sigma_start`: `-1`
-- `sigma_end`: `-1`
+- `start_percent`: `0.0`
+- `end_percent`: `1.0`
 - `only_anima`: `true`
 
 ## 注意
 
 - 現在の ComfyUI の Anima Preview 3 実装向けの実験ノードです。
+- `start_percent` / `end_percent` は内部で ComfyUI の `percent_to_sigma()` によりモデルごとの sigma 範囲へ変換されます。
 - positive / negative の両方を含む CFG バッチが必要です。negative conditioning が接続されていない場合は効果が出ません。
 - shape 固有の mask 処理を避けるため、masked attention 呼び出しでは処理をスキップします。
 - 既に別ノードが `optimized_attention_override` を設定している場合、このノードは既存 override を包む形で動作します。
