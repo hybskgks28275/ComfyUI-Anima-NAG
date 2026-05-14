@@ -5,9 +5,9 @@ version = "0.1.0"
 license = {file = "LICENSE"}
 
 [project.urls]
-Repository = ""
+Repository = "https://github.com/hybskgks28275/ComfyUI-Anima-NAG"
 
 [tool.comfy]
-PublisherId = ""
+PublisherId = "hybskgks28275"
 DisplayName = "ComfyUI-Anima-NAG"
 Icon = ""
