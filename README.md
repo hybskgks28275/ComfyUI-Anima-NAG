@@ -18,6 +18,7 @@ This node is intended to be used together with [Anima Turbo LoRA](https://civita
   - `alpha` (FLOAT): blend between original positive attention and normalized guided attention
   - `start_percent` / `end_percent` (FLOAT): active sampling range; `0.0` is the first step and `1.0` is the last step
   - `only_anima` (BOOLEAN): apply only when the model is detected as `image_model="anima"`
+  - `optimize_outside_range` (BOOLEAN): compute only the positive branch outside the active NAG range for faster CFG 1 turbo workflows
 - Output:
   - `model` (MODEL): patched model
 
@@ -40,11 +41,13 @@ Suggested starting values:
 - `start_percent`: `0.0`
 - `end_percent`: `1.0`
 - `only_anima`: `true`
+- `optimize_outside_range`: `true`
 
 ## Notes
 
 - This is experimental and tuned for Anima Preview 3's current ComfyUI implementation.
 - `start_percent` / `end_percent` are converted internally to the model's sigma range with ComfyUI's `percent_to_sigma()`.
+- With `optimize_outside_range=true`, partial ranges can speed up because steps outside the NAG range use the same positive-only behavior as ComfyUI's CFG 1 optimization. This option is intended for CFG 1 turbo workflows.
 - The node needs a CFG batch containing both positive and negative branches. If no negative conditioning is connected, it will have no effect.
 - Masked attention calls are skipped to avoid shape-specific mask slicing issues.
 - If another node already set `optimized_attention_override`, this node wraps the previous override rather than replacing it outright.

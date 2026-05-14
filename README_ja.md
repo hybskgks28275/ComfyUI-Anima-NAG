@@ -18,6 +18,7 @@ ComfyUI の Anima Preview 3 向け Normalized Attention Guidance 実験ノード
   - `alpha` (FLOAT): 元の positive attention と NAG 結果のブレンド率
   - `start_percent` / `end_percent` (FLOAT): 有効なサンプリング範囲。`0.0` が最初のステップ、`1.0` が最後のステップ
   - `only_anima` (BOOLEAN): `image_model="anima"` として検出されたモデルだけに適用
+  - `optimize_outside_range` (BOOLEAN): NAG範囲外では positive branch のみを計算し、CFG 1 turboワークフローを高速化
 - 出力:
   - `model` (MODEL): パッチ済みモデル
 
@@ -40,11 +41,13 @@ ComfyUI の Anima Preview 3 向け Normalized Attention Guidance 実験ノード
 - `start_percent`: `0.0`
 - `end_percent`: `1.0`
 - `only_anima`: `true`
+- `optimize_outside_range`: `true`
 
 ## 注意
 
 - 現在の ComfyUI の Anima Preview 3 実装向けの実験ノードです。
 - `start_percent` / `end_percent` は内部で ComfyUI の `percent_to_sigma()` によりモデルごとの sigma 範囲へ変換されます。
+- `optimize_outside_range=true` の場合、NAG範囲外のステップは ComfyUI の CFG 1 最適化と同じ positive-only 相当で計算するため、部分適用時に高速化できます。このオプションは CFG 1 の turboワークフロー向けです。
 - positive / negative の両方を含む CFG バッチが必要です。negative conditioning が接続されていない場合は効果が出ません。
 - shape 固有の mask 処理を避けるため、masked attention 呼び出しでは処理をスキップします。
 - 既に別ノードが `optimized_attention_override` を設定している場合、このノードは既存 override を包む形で動作します。

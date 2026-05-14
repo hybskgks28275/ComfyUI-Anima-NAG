@@ -4,6 +4,8 @@ from __future__ import annotations
 
 import torch
 
+import comfy.samplers
+
 from .comfy_api_compat import io
 
 
@@ -44,6 +46,14 @@ def _percent_to_sigma_range(model, start_percent: float, end_percent: float) -> 
     sigma_start = float(model_sampling.percent_to_sigma(start_percent))
     sigma_end = float(model_sampling.percent_to_sigma(end_percent))
     return sigma_start, sigma_end
+
+
+def _sigma_in_range(sigma: torch.Tensor, sigma_start: float, sigma_end: float) -> bool:
+    try:
+        sigma_value = float(sigma[0])
+    except Exception:
+        return True
+    return sigma_end < sigma_value <= sigma_start
 
 
 class AnimaNormalizedAttentionGuidance(io.ComfyNode):
@@ -104,6 +114,14 @@ class AnimaNormalizedAttentionGuidance(io.ComfyNode):
                     default=True,
                     tooltip="When enabled, do nothing unless the model is detected as image_model='anima'.",
                 ),
+                io.Boolean.Input(
+                    "optimize_outside_range",
+                    default=True,
+                    tooltip=(
+                        "When enabled, steps outside the NAG percent range compute only the positive branch. "
+                        "This preserves CFG=1 turbo workflows and makes partial ranges faster."
+                    ),
+                ),
             ],
             outputs=[
                 _Model.Output(display_name="model"),
@@ -124,6 +142,7 @@ class AnimaNormalizedAttentionGuidance(io.ComfyNode):
         start_percent: float,
         end_percent: float,
         only_anima: bool,
+        optimize_outside_range: bool,
     ) -> io.NodeOutput:
         m = model.clone()
         if only_anima and not _is_anima_model(m):
@@ -136,6 +155,7 @@ class AnimaNormalizedAttentionGuidance(io.ComfyNode):
 
         transformer_options = m.model_options.setdefault("transformer_options", {}).copy()
         previous_override = transformer_options.get("optimized_attention_override")
+        previous_calc_cond_batch = m.model_options.get("sampler_calc_cond_batch_function")
 
         def run_attention(func, q, k, v, heads, call_kwargs):
             if previous_override is None:
@@ -205,7 +225,44 @@ class AnimaNormalizedAttentionGuidance(io.ComfyNode):
             except Exception:
                 return z
 
+        def calc_cond_batch_function(args):
+            conds = args["conds"]
+            if (
+                not optimize_outside_range
+                or len(conds) < 2
+                or conds[1] is None
+                or _sigma_in_range(args["sigma"], sigma_start, sigma_end)
+            ):
+                if previous_calc_cond_batch is not None:
+                    return previous_calc_cond_batch(args)
+                return comfy.samplers.calc_cond_batch(
+                    args["model"],
+                    conds,
+                    args["input"],
+                    args["sigma"],
+                    args["model_options"],
+                )
+
+            cond_only = [conds[0], None]
+            if previous_calc_cond_batch is not None:
+                cond_args = args.copy()
+                cond_args["conds"] = cond_only
+                out = previous_calc_cond_batch(cond_args)
+            else:
+                out = comfy.samplers.calc_cond_batch(
+                    args["model"],
+                    cond_only,
+                    args["input"],
+                    args["sigma"],
+                    args["model_options"],
+                )
+
+            # At CFG=1 this is equivalent to ComfyUI's CFG1 optimization, while keeping the
+            # NAG range free to compute both positive and negative branches.
+            return [out[0], out[0]]
+
         transformer_options["optimized_attention_override"] = attention_override
         m.model_options["transformer_options"] = transformer_options
+        m.set_model_sampler_calc_cond_batch_function(calc_cond_batch_function)
         m.disable_model_cfg1_optimization()
         return io.NodeOutput(m)
