@@ -1,0 +1,13 @@
+[project]
+name = "ComfyUI-Anima-NAG"
+description = "Experimental Normalized Attention Guidance node for Anima Preview 3 in ComfyUI."
+version = "0.1.0"
+license = {file = "LICENSE"}
+
+[project.urls]
+Repository = ""
+
+[tool.comfy]
+PublisherId = ""
+DisplayName = "ComfyUI-Anima-NAG"
+Icon = ""
