@@ -58,6 +58,14 @@ Anima は CircleStone Labs と Comfy Org による 2B パラメータの text-to
 
 この設定例は、Anima Turbo LoRA の推奨である sampler steps `8-12` を前提にしています。異なるステップ数や別の高速化手法を使う場合は、そのワークフローに合わせて `start_percent`、`end_percent`、`scale`、`tau`、`alpha` を見直してください。
 
+## サンプルワークフロー
+
+以下のサンプルワークフローを同梱しています。
+
+- `WorkFlow/AnimaTurboLoRAwithNAG.json`
+
+このワークフローは、Anima Turbo LoRA と `Anima Normalized Attention Guidance` を CFG 1 で併用する例です。上記の `8-12` steps 前提の turbo 設定の出発点として利用できます。
+
 ## プロンプトのメモ
 
 正式版 Anima は Danbooru 形式のタグ、自然文キャプション、およびその混在を扱えます。

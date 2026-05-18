@@ -1,7 +1,7 @@
 [project]
 name = "ComfyUI-Anima-NAG"
 description = "Experimental Normalized Attention Guidance node for Anima in ComfyUI."
-version = "1.0.0"
+version = "1.01"
 license = {file = "LICENSE"}
 
 [project.urls]

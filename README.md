@@ -60,6 +60,14 @@ Example settings:
 
 These settings assume the Anima Turbo LoRA recommended `8-12` sampler steps. If you use a different step count or a different acceleration method, review `start_percent`, `end_percent`, `scale`, `tau`, and `alpha` for that workflow.
 
+## Sample workflow
+
+A sample workflow is included at:
+
+- `WorkFlow/AnimaTurboLoRAwithNAG.json`
+
+This workflow demonstrates using Anima Turbo LoRA together with `Anima Normalized Attention Guidance` at CFG 1. It is intended as a starting point for the `8-12` step turbo setup described above.
+
 ## Prompting notes
 
 The official Anima model accepts Danbooru-style tags, natural language captions, and mixtures of both.
